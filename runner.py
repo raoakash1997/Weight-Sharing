@@ -4,7 +4,7 @@ import datetime
 import subprocess
 from tqdm import tqdm
 
-print 'Current PID:',os.getpid()
+print ('Current PID:',os.getpid())
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpus',type=str, default='0,1,2,3',help='Available gpus separated by comma.')
@@ -73,8 +73,8 @@ for aug_type in AUG_TYPES:
 
 
 now = datetime.datetime.now()
-print 'Starting @', now.strftime("%Y-%m-%d %H:%M")
-print 'Total jobs to run:', len(stack)
+print ('Starting @', now.strftime("%Y-%m-%d %H:%M"))
+print ('Total jobs to run:', len(stack))
 gpus = { gpu:[] for gpu in FLAGS.gpus.split(',')}
 num_per_gpu = FLAGS.max_concurrent / len(gpus)
 

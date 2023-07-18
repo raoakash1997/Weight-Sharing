@@ -61,18 +61,18 @@ def load_results(dataset='mnist', SET=True):
     return no_vcp_results, cnn_results, fcn_results, fcn_results_vcp
 
 def convert_table(df, to_latex=False):
-    res_table = df.groupby(['model','aug_type','aug'])[['acc', 'val_acc', 'translation']].median().reset_index().pivot_table(index='aug',columns=['aug_type', 'model'])
+    res_table = df.groupby(['model','aug_type','aug'])[['accuracy', 'val_accuracy', 'noise']].max().reset_index().pivot_table(index='aug',columns=['aug_type', 'model'])
     res_table.columns = res_table.columns.swaplevel(0,1)
     res_table.sort_index(axis=1, level=0, inplace=True)
     # res_table.columns = res_table.columns.droplevel()
 
-    if to_latex: print res_table.to_latex()
+    if to_latex: print (res_table.to_latex())
     else: return res_table
 
 def convert_table_vcp(df, eval_type='val_acc', to_latex=False):
     res_table = df.groupby(['vcp','aug'])[eval_type].median().to_frame().reset_index().pivot_table(index='vcp',columns=['aug'])
     res_table.columns = res_table.columns.droplevel()
-    if to_latex: print res_table.to_latex()
+    if to_latex: print (res_table.to_latex())
     else: return res_table
 
 def aug_eval(df, aug_type='translation', y=[0.9, 1.0], eval_type='val_acc'):

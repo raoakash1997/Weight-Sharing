@@ -2,7 +2,7 @@ from keras.optimizers import Adam
 from keras.models import load_model
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D
-from keras.layers.local import LocallyConnected2D
+from keras.layers import LocallyConnected2D
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from Custom.layers import VariableConnections
@@ -21,7 +21,7 @@ class Model:
 
     def fit(self, x_train, y_train, x_test, y_test, callbacks=[]):
         callbacks.append(
-            EarlyStopping(monitor='val_acc', min_delta=0, patience=self.args['patience'], verbose=0, mode='auto')
+            EarlyStopping(monitor='val_accuracy', min_delta=0, patience=self.args['patience'], verbose=0, mode='auto')
         )
 
         # training
@@ -38,7 +38,7 @@ class Model:
 
     def fit_generator(self, x_train, y_train, x_test, y_test, callbacks=[]):
         callbacks.append(
-            EarlyStopping(monitor='val_acc', min_delta=0, patience=self.args['patience'], verbose=0, mode='auto')
+            EarlyStopping(monitor='val_accuracy', min_delta=0, patience=self.args['patience'], verbose=0, mode='auto')
         )
 
         val_gen = ValidationGeneration(x_test,y_test,self.args); callbacks.append(val_gen)
@@ -81,7 +81,6 @@ class Model:
             metrics=['accuracy']
         )
         return model
-
     def _mnist_net(self):
         layer = LocallyConnected2D if self.args['model'] == 'fcn' else Conv2D
         model = Sequential()
@@ -99,27 +98,23 @@ class Model:
         model.add(Dense(10, activation='softmax'))
 
         return model
-
     def _mnist_net(self):
+        print("We in MNIST 2")
         layer = LocallyConnected2D if self.args['model'] == 'fcn' else Conv2D
         model = Sequential()
         if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
             model.add(VariableConnections(self.args['vcp'], input_shape=(28,28,1)))
-            model.add(layer(32, (3,3), strides=2, activation='relu', padding='valid'))
+            model.add(layer(8, (3,3), strides=2, activation='relu', padding='valid'))
         else:
-            model.add(layer(32, (3,3), strides=2, activation='relu', padding='valid', input_shape=(28,28,1)))
+            model.add(layer(8, (3,3), strides=2, activation='relu', padding='valid', input_shape=(28,28,1)))
 
-        if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
-            model.add(VariableConnections(self.args['vcp']))
-
-        model.add(layer(64, (3,3), strides=2, activation='relu', padding='valid'))
         if self.args['num_layers'] == 3:
             if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
                 model.add(VariableConnections(self.args['vcp']))
-            model.add(layer(128, (3, 3), activation='relu', padding='valid'))
+            model.add(layer(32, (3, 3), activation='relu', padding='valid'))
 
         model.add(Flatten())
-        model.add(Dense(1024, activation='relu'))
+        model.add(Dense(256, activation='relu'))
         model.add(Dense(10, activation='softmax'))
 
         return model
@@ -129,21 +124,21 @@ class Model:
         model = Sequential()
         if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
             model.add(VariableConnections(self.args['vcp'], input_shape=(32, 32, 3)))
-            model.add(layer(64, (5, 5), strides=2, activation='relu', padding='valid'))
+            model.add(layer(8, (3, 3), strides=2, activation='relu', padding='valid'))
         else:
-            model.add(layer(64, (5,5), strides=2, activation='relu', padding='valid', input_shape=(32, 32, 3)))
+            model.add(layer(8, (3,3), strides=2, activation='relu', padding='valid', input_shape=(32, 32, 3)))
 
         if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
             model.add(VariableConnections(self.args['vcp']))
 
-        model.add(layer(128, (5,5), strides=2, activation='relu', padding='valid'))
+        #model.add(layer(128, (5,5), strides=2, activation='relu', padding='valid'))
         if self.args['num_layers'] == 3:
             if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
                 model.add(VariableConnections(self.args['vcp']))
-            model.add(layer(256, (3, 3), activation='relu', padding='valid'))
+            model.add(layer(32, (3, 3), activation='relu', padding='valid'))
 
         model.add(Flatten())
-        model.add(Dense(1024, activation='relu'))
+        model.add(Dense(256, activation='relu'))    
         model.add(Dense(10, activation='softmax'))
 
         return model
