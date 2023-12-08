@@ -22,6 +22,11 @@ parser.add_argument('--model',type=str, default='cnn', choices=['cnn', 'fcn'])
 parser.add_argument('--vcp', type=float, default=0., help='Variable Connection Probability')
 parser.add_argument('--aug', type=float, default=0., help='Translational Augmentation Probability')
 parser.add_argument('--aug_type', default='translation', help='Type of Augmentation for training')
+parser.add_argument('--load_type', type=str, default='none')
+parser.add_argument('--load_filename', type=str)
+parser.add_argument('--save_filename', type=str)
+parser.add_argument('--save_type', type=str, default='none')
+
 args = vars(parser.parse_args())
 
 args['lr']         = 0.001 if args['dataset'] == 'mnist' else 0.0001
@@ -49,6 +54,8 @@ elif args['dataset'] == 'mnist':
     x_train = x_train.reshape(-1, 28, 28, 1)
     x_test = x_test.reshape(-1, 28, 28, 1)
 
+
+
 data = np.append(x_train, x_test, axis=0)
 targets = keras.utils.to_categorical(np.append(y_train, y_test), 10)
 data = data.astype('float32')
@@ -63,8 +70,16 @@ train_size = int(0.8 * len(data))
 x_train, x_test = data[:train_size], data[train_size:]
 y_train, y_test = targets[:train_size], targets[train_size:]
 
-model = Model(args)
+
+if args['load_type'] == 'none':    
+    model = Model(args)
+else:
+    model = Model(args,args['load_filename'])
+
 history = model.fit_generator(x_train, y_train, x_test, y_test)
+
+if args['save_type'] != 'none':
+    model.save_model(args['save_filename'])
 
 del model
 lines = ''
@@ -91,10 +106,8 @@ elif args['split_for_cifar'] == 2:
     results_file_name = 'Results/'+args['dataset']+'_1.csv'
 else:
     results_file_name = 'Results/' + args['dataset'] + '.csv'
-# print("Akash 3")
 
 with open(results_file_name, 'a+') as results_file:
-        #print("Akash 4")
         #fcntl.flock(results_file, fcntl.LOCK_EX)
     if not results_file.readline():
         header = 'epoch,model,aug_type,aug,vcp,'
@@ -102,7 +115,5 @@ with open(results_file_name, 'a+') as results_file:
 
         results_file.write(header[:-1] + '\n')
     results_file.write(lines)
-        #print("Akash 5")
 
        # fcntl.flock(results_file, fcntl.LOCK_UN)
-#print("Akash Done")

@@ -1,5 +1,5 @@
 from keras.optimizers import Adam
-from keras.models import load_model
+from keras.models import load_weights
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv2D
 from keras.layers import LocallyConnected2D
@@ -15,6 +15,7 @@ class Model:
         self.args = args
 
         if file_name is not None:
+            self._build_model()
             self._load_model(file_name)
         else:
             self._build_model()
@@ -99,7 +100,6 @@ class Model:
 
         return model
     def _mnist_net(self):
-        print("We in MNIST 2")
         layer = LocallyConnected2D if self.args['model'] == 'fcn' else Conv2D
         model = Sequential()
         if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
@@ -124,21 +124,21 @@ class Model:
         model = Sequential()
         if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
             model.add(VariableConnections(self.args['vcp'], input_shape=(32, 32, 3)))
-            model.add(layer(8, (3, 3), strides=2, activation='relu', padding='valid'))
+            model.add(layer(64, (5, 5), strides=2, activation='relu', padding='valid'))
         else:
-            model.add(layer(8, (3,3), strides=2, activation='relu', padding='valid', input_shape=(32, 32, 3)))
+            model.add(layer(64, (5,5), strides=2, activation='relu', padding='valid', input_shape=(32, 32, 3)))
 
         if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
             model.add(VariableConnections(self.args['vcp']))
 
-        #model.add(layer(128, (5,5), strides=2, activation='relu', padding='valid'))
+        model.add(layer(128, (5,5), strides=2, activation='relu', padding='valid'))
         if self.args['num_layers'] == 3:
             if self.args['model'] == 'fcn' and self.args['vcp'] > 0:
                 model.add(VariableConnections(self.args['vcp']))
-            model.add(layer(32, (3, 3), activation='relu', padding='valid'))
+            model.add(layer(256, (3, 3), activation='relu', padding='valid'))
 
         model.add(Flatten())
-        model.add(Dense(256, activation='relu'))    
+        model.add(Dense(1024, activation='relu'))    
         model.add(Dense(10, activation='softmax'))
 
         return model
@@ -148,7 +148,7 @@ class Model:
             with open('model.json', 'r') as json_file:
                 loaded_model = model_from_json(json_file.read())
         elif load_type == 'all':
-            self.model = load_model(file_name)
+            self.model = load_weights(file_name)
 
     def save_model(self, file_name):
         if self.args['save_type'] == 'json':
